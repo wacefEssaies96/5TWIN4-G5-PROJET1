@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: stationSki
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - networkwacef
+  spring:
+    image: wacef96/wacef_essaies-5twin4-g5-projet1:spring
+    restart: on-failure
+    ports:
+      - "8089:8089"
+    environment:
+      SPRING_APPLICATION_JSON: '{
+              "spring.datasource.url"  : "jdbc:mysql://db:3306/stationSki?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC",
+              "spring.datasource.username" : "root",
+              "spring.datasource.password" : "",
+              "spring.jpa.hibernate.ddl-auto" : "update"
+            }'
+    depends_on:
+      - db
+    stdin_open: true
+    tty: true
+    networks:
+      - networkwacef
+  angular:
+    image: wacef96/angular
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    networks:
+      - networkwacef
+  
+volumes:
+  db_data: {}
+networks:
+  networkwacef:
+    driver: bridge
+
